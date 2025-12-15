@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finxplore-api
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: finxplore-api
+  template:
+    metadata:
+      labels:
+        app: finxplore-api
+    spec:
+      containers:
+        - name: api
+          image: finxplore-api:latest
+          imagePullPolicy: Never # Use local image (good for Minikube/Kind)
+          ports:
+            - containerPort: 8080
+            - containerPort: 50051
+          env:
+            - name: APP_ENV
+              value: "production"
+            # In K8s, we don't use "localhost". We use Service names.
+            - name: DB_HOST
+              value: "postgres-service"
+            - name: REDIS_ADDR
+              value: "redis-service:6379"

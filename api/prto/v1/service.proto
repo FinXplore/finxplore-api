@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package v1;
+
+option go_package = "github.com/Dhyey3187/finxplore-api/pkg/pb/v1";
+
+service FinXploreService {
+  rpc GetHealth (HealthRequest) returns (HealthResponse);
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  string status = 1;
+}

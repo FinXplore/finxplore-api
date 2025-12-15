@@ -1,0 +1,47 @@
+# --- Go Binaries & Build Outputs ---
+/bin/
+/dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Ignore the specific binary name we use in Makefile
+finxplore-api
+
+# --- Environment Variables (CRITICAL) ---
+# Never commit your secrets!
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- IDE & Editor Configs ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- OS Specific Files ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Docker Local Volumes ---
+# If you mapped volumes inside the project folder by mistake
+postgres_data/
+redis_data/
+
+# --- Go Workspace (if used) ---
+go.work
+go.work.sum
+
+# --- Note on Wire ---
+# We DO NOT ignore 'wire_gen.go'.
+# It is best practice to commit the generated wire file so others
+# can build the project without needing to install the Wire tool first.
