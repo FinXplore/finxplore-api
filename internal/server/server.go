@@ -1,10 +1,14 @@
 package server
+
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
+	"github.com/Dhyey3187/finxplore-api/api/handler"
 	"github.com/Dhyey3187/finxplore-api/internal/config"
 )
 type Server struct {
@@ -13,33 +17,42 @@ type Server struct {
 	router *gin.Engine
 	db     *gorm.DB
 	redis  *redis.Client
+	authHandler *handler.AuthHandler
 }
 
-// Update constructor to accept logger
-func NewServer(cfg *config.Config, logger *zap.Logger, db *gorm.DB, rdb *redis.Client) *Server {
+func NewServer(cfg *config.Config,logger *zap.Logger, db *gorm.DB, rdb *redis.Client, authHandler *handler.AuthHandler) *Server {
+
 	if cfg.AppEnv == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	return &Server{
+	router := gin.Default()
+	router.Use(gin.Recovery()) 
+	router.Use(gin.Logger())
+	// router.Use(middleware.CorsMiddleware()) // We will add this later
+
+	s := &Server{
 		cfg:    cfg,
-		logger: logger, // Store it
-		router: gin.Default(),
 		db:     db,
 		redis:  rdb,
+		router: router,
+		logger: logger,
+		authHandler: authHandler,
 	}
+
+	return s
 }
 
 func (s *Server) Run() error {
-	// Call the method to setup routes
 	s.RegisterRoutes()
 
 	s.logger.Info("🚀 Server starting",
-		zap.String("port", s.cfg.ServerPort),
+		zap.Int("port", s.cfg.ServerPort),
 		zap.String("env", s.cfg.AppEnv),
 	)
 
-	return s.router.Run(":" + s.cfg.ServerPort)
+	addr := fmt.Sprintf(":%d", s.cfg.ServerPort)
+	return s.router.Run(addr)
 }
 
 func (s *Server) RegisterRoutes() {
@@ -51,4 +64,13 @@ func (s *Server) RegisterRoutes() {
 			"db":     "likely connected",
 		})
 	})
+
+	api := s.router.Group("/api/v1")
+	{
+		auth := api.Group("/auth")
+		{
+			// Use the injected handler
+			auth.POST("/register", s.authHandler.Register)
+		}
+	}
 }

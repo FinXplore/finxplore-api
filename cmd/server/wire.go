@@ -9,6 +9,9 @@ import (
 	"github.com/Dhyey3187/finxplore-api/internal/database"
 	"github.com/Dhyey3187/finxplore-api/internal/logger"
 	"github.com/Dhyey3187/finxplore-api/internal/server"
+	"github.com/Dhyey3187/finxplore-api/api/handler"
+	"github.com/Dhyey3187/finxplore-api/api/repository"
+	"github.com/Dhyey3187/finxplore-api/api/service"
 )
 
 // InitializeApp is the blueprint for the Wire tool.
@@ -18,6 +21,9 @@ func InitializeApp() (*server.Server, error) {
 		logger.NewLogger,         // Returns *Logger, error
 		database.ConnectPostgres, // Returns *gorm.DB, error
 		database.ConnectRedis,    // Returns *redis.Client, error
+		service.NewUserService,
+		repository.NewUserRepository,
+		handler.NewAuthHandler,
 		server.NewServer,         // Returns *Server
 	)
 	return &server.Server{}, nil

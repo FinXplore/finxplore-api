@@ -4,7 +4,9 @@ CMD_PATH=./cmd/server
 
 .PHONY: run build clean docker-up docker-down
 
-# Run locally (Go)
+# Run locally (wire)
+wire:
+	wire $(CMD_PATH)
 run:
 	go run $(CMD_PATH)
 
