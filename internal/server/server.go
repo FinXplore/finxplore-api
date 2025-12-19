@@ -71,6 +71,7 @@ func (s *Server) RegisterRoutes() {
 		{
 			// Use the injected handler
 			auth.POST("/register", s.authHandler.Register)
+			auth.POST("/login", s.authHandler.Login)
 		}
 	}
 }

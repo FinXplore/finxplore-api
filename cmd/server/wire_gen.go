@@ -37,7 +37,8 @@ func InitializeApp() (*server.Server, error) {
 		return nil, err
 	}
 	userRepository := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepository)
+	cacheRepository := repository.NewCacheRepository(client)
+	userService := service.NewUserService(userRepository, cacheRepository, configConfig)
 	authHandler := handler.NewAuthHandler(userService)
 	serverServer := server.NewServer(configConfig, zapLogger, db, client, authHandler)
 	return serverServer, nil

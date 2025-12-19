@@ -23,6 +23,7 @@ func InitializeApp() (*server.Server, error) {
 		database.ConnectRedis,    // Returns *redis.Client, error
 		service.NewUserService,
 		repository.NewUserRepository,
+		repository.NewCacheRepository,
 		handler.NewAuthHandler,
 		server.NewServer,         // Returns *Server
 	)

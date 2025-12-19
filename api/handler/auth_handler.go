@@ -26,7 +26,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	// 2. Call Service
-	user, err := h.service.RegisterUser(req.Email, req.Password, req.FirstName, req.LastName, req.DialingCode, req.MobileNumber)
+	user, err := h.service.RegisterUser(req.Email, req.Password, req.FirstName, req.LastName, req.DialingCode, req.MobileNumber, req.Currency)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
@@ -34,10 +34,36 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	// 3. Response (Resource Transformation)
 	response := dto.UserResponse{
-		// ID:       user.ID.String(),
-		Email:    user.Email,
 		FullName: user.FirstName + " " + user.LastName,
 		Role:     user.Role,
+	}
+
+	c.JSON(http.StatusCreated, response)
+}
+
+func (h *AuthHandler) Login(c *gin.Context) {
+	var req dto.LoginRequest
+
+	// 1. Validation (Middleware logic inside Gin)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 2. Call Service
+	accessToken, refreshToken, user, err := h.service.LoginUser(req.DialingCode, req.MobileNumber, req.Password)
+	if err != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 3. Response (Resource Transformation)
+	response := dto.LoginResponse{
+		FullName: user.FirstName + " " + user.LastName,
+		Role:     user.Role,
+		UserCode:     user.UserCode,
+		AccessToken: accessToken,
+		RefreshToken: refreshToken,
 	}
 
 	c.JSON(http.StatusCreated, response)

@@ -19,6 +19,8 @@ type Config struct {
 	RedisAddr    string `mapstructure:"redis_addr"`
 	RedisPass    string `mapstructure:"redis_pass"`
 	KafkaBrokers string `mapstructure:"kafka_brokers"`
+
+	JWTSecret string `mapstructure:"jwt_secret"`
 }
 
 func LoadConfig() (*Config, error) {
