@@ -15,6 +15,7 @@ import (
 type UserService interface {
 	RegisterUser(email, password, firstName, lastName, dialingCode, mobileNumber, currency string) (*models.User, error)
 	LoginUser(dialingCode, mobileNumber, password string) (string, string, *models.User, error)
+	RefreshAccessToken(dialingCode, mobileNumber, refreshToken string) (string, error)
 }
 
 type userService struct {
@@ -100,4 +101,30 @@ func (s *userService) LoginUser(dialingCode, mobileNumber, password string) (str
 	}
 
 	return accessToken, refreshToken, user, nil
+}
+
+func (s *userService) RefreshAccessToken(dialingCode, mobileNumber, refreshToken string) (string, error) {
+	user, err := s.repo.GetUserByMobileNumber(dialingCode, mobileNumber)
+	if err != nil {
+		return "", errors.New("user not found")
+	}
+
+	// Redis Key is still based on UserCode (refresh:FX...)
+	redisKey := "refresh:" + user.UserCode
+	storedToken, err := s.cacheRepo.GetSession(redisKey)
+	if err != nil {
+		return "", errors.New("session expired or invalid")
+	}
+
+	if storedToken != refreshToken {
+		return "", errors.New("invalid refresh token")
+	}
+
+	// 4. Generate NEW Access Token
+	newAccessToken, err := utils.CreateAccessToken(user.UserCode, user.Role, s.cfg.JWTSecret)
+	if err != nil {
+		return "", err
+	}
+
+	return newAccessToken, nil
 }

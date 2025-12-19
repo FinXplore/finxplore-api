@@ -68,3 +68,21 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, response)
 }
+
+func (h *AuthHandler) Refresh(c *gin.Context) {
+	var req dto.RefreshRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	accessToken, err := h.service.RefreshAccessToken(req.DialingCode, req.MobileNumber, req.RefreshToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.RefreshResponse{
+		AccessToken: accessToken,
+	})
+}

@@ -17,5 +17,5 @@ func (r *UserRoutes) Register(router *gin.RouterGroup) {
 	auth := router.Group("/auth")
 	auth.POST("/login", r.handler.Login)
 	auth.POST("/register", r.handler.Register)
-	// auth.POST("/refresh",r.handler.Login)
+	auth.POST("/refresh",r.handler.Refresh)
 }

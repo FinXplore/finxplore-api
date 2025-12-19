@@ -30,3 +30,13 @@ type LoginResponse struct {
 	AccessToken string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
+
+type RefreshRequest struct {
+	DialingCode string `json:"dialing_code" binding:"required"`
+	MobileNumber string `json:"mobile_number" binding:"required"` // Changed from user_code
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+type RefreshResponse struct {
+	AccessToken string `json:"access_token"`
+}
