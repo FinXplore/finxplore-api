@@ -7,9 +7,14 @@
 package main
 
 import (
+	"github.com/Dhyey3187/finxplore-api/api/handler"
+	"github.com/Dhyey3187/finxplore-api/api/repository"
+	"github.com/Dhyey3187/finxplore-api/api/routes"
+	"github.com/Dhyey3187/finxplore-api/api/service"
 	"github.com/Dhyey3187/finxplore-api/internal/config"
 	"github.com/Dhyey3187/finxplore-api/internal/database"
 	"github.com/Dhyey3187/finxplore-api/internal/logger"
+	"github.com/Dhyey3187/finxplore-api/internal/middleware"
 	"github.com/Dhyey3187/finxplore-api/internal/server"
 )
 
@@ -17,12 +22,15 @@ import (
 
 // InitializeApp is the blueprint for the Wire tool.
 func InitializeApp() (*server.Server, error) {
-	configConfig := config.LoadConfig()
+	configConfig, err := config.LoadConfig()
+	if err != nil {
+		return nil, err
+	}
 	zapLogger, err := logger.NewLogger(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	db, err := database.ConnectPostgres(configConfig)
+	db, err := database.ConnectPostgres(configConfig, zapLogger)
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +38,13 @@ func InitializeApp() (*server.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	serverServer := server.NewServer(configConfig, zapLogger, db, client)
+	userRepository := repository.NewUserRepository(db)
+	cacheRepository := repository.NewCacheRepository(client)
+	userService := service.NewUserService(userRepository, cacheRepository, configConfig)
+	authHandler := handler.NewAuthHandler(userService)
+	userRoutes := routes.NewUserRoutes(authHandler)
+	handlerFunc := middleware.AuthMiddleware(configConfig)
+	routesRoutes := routes.NewRoutes(userRoutes, handlerFunc)
+	serverServer := server.NewServer(configConfig, zapLogger, db, client, routesRoutes)
 	return serverServer, nil
 }

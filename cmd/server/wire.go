@@ -1,6 +1,5 @@
 //go:build wireinject
 // +build wireinject
-
 package main
 
 import (
@@ -9,6 +8,11 @@ import (
 	"github.com/Dhyey3187/finxplore-api/internal/database"
 	"github.com/Dhyey3187/finxplore-api/internal/logger"
 	"github.com/Dhyey3187/finxplore-api/internal/server"
+	"github.com/Dhyey3187/finxplore-api/api/handler"
+	"github.com/Dhyey3187/finxplore-api/internal/middleware"
+	"github.com/Dhyey3187/finxplore-api/api/routes"
+	"github.com/Dhyey3187/finxplore-api/api/repository"
+	"github.com/Dhyey3187/finxplore-api/api/service"
 )
 
 // InitializeApp is the blueprint for the Wire tool.
@@ -18,6 +22,13 @@ func InitializeApp() (*server.Server, error) {
 		logger.NewLogger,         // Returns *Logger, error
 		database.ConnectPostgres, // Returns *gorm.DB, error
 		database.ConnectRedis,    // Returns *redis.Client, error
+		service.NewUserService,
+		repository.NewUserRepository,
+		repository.NewCacheRepository,
+		handler.NewAuthHandler,
+		middleware.AuthMiddleware,
+		routes.NewUserRoutes,
+		routes.NewRoutes,
 		server.NewServer,         // Returns *Server
 	)
 	return &server.Server{}, nil
