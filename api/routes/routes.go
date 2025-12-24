@@ -4,11 +4,13 @@ import "github.com/gin-gonic/gin"
 
 type Routes struct {
 	UserRoutes *UserRoutes
+	AuthMiddleware gin.HandlerFunc
 }
 
-func NewRoutes(userRoutes *UserRoutes) *Routes {
+func NewRoutes(userRoutes *UserRoutes, authMiddleware gin.HandlerFunc) *Routes {
 	return &Routes{
-		UserRoutes: userRoutes,
+		UserRoutes:     userRoutes,
+		AuthMiddleware: authMiddleware,
 	}
 }
 
@@ -22,4 +24,12 @@ func (r *Routes) Register(router *gin.Engine) {
 
 	api := router.Group("/api/v1")
 	r.UserRoutes.Register(api)
+
+	// 2. Protected Routes (Token Required)
+	protected := api.Group("/")
+	protected.Use(r.AuthMiddleware)
+	{
+		r.UserRoutes.RegisterProtected(protected)
+		// r.WalletRoutes.Register(protected) // Future
+	}
 }
