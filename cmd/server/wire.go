@@ -9,6 +9,7 @@ import (
 	"github.com/Dhyey3187/finxplore-api/internal/logger"
 	"github.com/Dhyey3187/finxplore-api/internal/server"
 	"github.com/Dhyey3187/finxplore-api/api/handler"
+	"github.com/Dhyey3187/finxplore-api/internal/middleware"
 	"github.com/Dhyey3187/finxplore-api/api/routes"
 	"github.com/Dhyey3187/finxplore-api/api/repository"
 	"github.com/Dhyey3187/finxplore-api/api/service"
@@ -25,6 +26,7 @@ func InitializeApp() (*server.Server, error) {
 		repository.NewUserRepository,
 		repository.NewCacheRepository,
 		handler.NewAuthHandler,
+		middleware.AuthMiddleware,
 		routes.NewUserRoutes,
 		routes.NewRoutes,
 		server.NewServer,         // Returns *Server

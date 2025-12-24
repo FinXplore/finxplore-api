@@ -2,6 +2,7 @@ package utils
 
 import (
 	"time"
+	"errors"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -33,4 +34,27 @@ func CreateAccessToken(userCode, role, secret string) (string, error) {
 // We just generate a random UUID. We will validate it against Redis later.
 func CreateRefreshToken() string {
 	return uuid.New().String()
+}
+
+// VerifyToken checks if the token is valid and returns the claims
+func VerifyToken(tokenString, secret string) (*Claims, error) {
+	// Parse the token
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		// Validate the signing method (Security Check)
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return []byte(secret), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract Claims
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, errors.New("invalid token claims")
 }

@@ -24,6 +24,17 @@ func ConnectPostgres(cfg *config.Config, zapLogger *zap.Logger) (*gorm.DB, error
 	zapLogger.Info("Running Database Migrations...")
 	err = db.AutoMigrate(
 		&models.User{}, 
+		// Stock Data
+		&models.Stock{},
+		&models.StockPriceHistory{},
+		&models.StockDividends{},
+		&models.StockSplits{},
+		&models.IncomeStatement{},
+		&models.BalanceSheet{},
+		&models.CashFlow{},
+		&models.StockAnalystRatings{},
+		&models.StockPriceTargets{},
+		&models.News{},
 		// &models.Wallet{},      // Add future models here
 		// &models.Transaction{}, // Add future models here
 	)

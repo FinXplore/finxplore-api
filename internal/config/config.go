@@ -21,6 +21,11 @@ type Config struct {
 	KafkaBrokers string `mapstructure:"kafka_brokers"`
 
 	JWTSecret string `mapstructure:"jwt_secret"`
+
+	DataWorkerURL string `mapstructure:"data_worker_url"`
+	DataWorkerApiKey string `mapstructure:"data_worker_api_key"`
+
+	
 }
 
 func LoadConfig() (*Config, error) {

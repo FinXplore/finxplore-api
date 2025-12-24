@@ -14,6 +14,7 @@ import (
 	"github.com/Dhyey3187/finxplore-api/internal/config"
 	"github.com/Dhyey3187/finxplore-api/internal/database"
 	"github.com/Dhyey3187/finxplore-api/internal/logger"
+	"github.com/Dhyey3187/finxplore-api/internal/middleware"
 	"github.com/Dhyey3187/finxplore-api/internal/server"
 )
 
@@ -42,7 +43,8 @@ func InitializeApp() (*server.Server, error) {
 	userService := service.NewUserService(userRepository, cacheRepository, configConfig)
 	authHandler := handler.NewAuthHandler(userService)
 	userRoutes := routes.NewUserRoutes(authHandler)
-	routesRoutes := routes.NewRoutes(userRoutes)
+	handlerFunc := middleware.AuthMiddleware(configConfig)
+	routesRoutes := routes.NewRoutes(userRoutes, handlerFunc)
 	serverServer := server.NewServer(configConfig, zapLogger, db, client, routesRoutes)
 	return serverServer, nil
 }

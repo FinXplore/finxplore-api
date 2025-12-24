@@ -10,6 +10,7 @@ import (
 
 	"github.com/Dhyey3187/finxplore-api/api/routes"
 	"github.com/Dhyey3187/finxplore-api/internal/config"
+	"github.com/Dhyey3187/finxplore-api/internal/cron"
 )
 
 type Server struct {
@@ -49,6 +50,8 @@ func NewServer(
 
 func (s *Server) Run() error {
 	// 🔑 Routes are registered here
+	scheduler := cron.NewScheduler(s.cfg.DataWorkerURL, s.cfg.DataWorkerApiKey, s.logger)
+    scheduler.Start()
 	s.routes.Register(s.router)
 
 	s.logger.Info("🚀 Server starting",
