@@ -43,8 +43,12 @@ func InitializeApp() (*server.Server, error) {
 	userService := service.NewUserService(userRepository, cacheRepository, configConfig)
 	authHandler := handler.NewAuthHandler(userService)
 	userRoutes := routes.NewUserRoutes(authHandler)
+	stockRepository := repository.NewStockRepository(db)
+	marketService := service.NewMarketService(stockRepository)
+	marketHandler := handler.NewMarketHandler(marketService)
+	stockRoutes := routes.NewStockRoutes(marketHandler)
 	handlerFunc := middleware.AuthMiddleware(configConfig)
-	routesRoutes := routes.NewRoutes(userRoutes, handlerFunc)
+	routesRoutes := routes.NewRoutes(userRoutes, stockRoutes, handlerFunc)
 	serverServer := server.NewServer(configConfig, zapLogger, db, client, routesRoutes)
 	return serverServer, nil
 }
