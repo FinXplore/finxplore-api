@@ -23,11 +23,15 @@ func InitializeApp() (*server.Server, error) {
 		database.ConnectPostgres, // Returns *gorm.DB, error
 		database.ConnectRedis,    // Returns *redis.Client, error
 		service.NewUserService,
+		service.NewMarketService,
 		repository.NewUserRepository,
+		repository.NewStockRepository,
 		repository.NewCacheRepository,
 		handler.NewAuthHandler,
+		handler.NewMarketHandler,
 		middleware.AuthMiddleware,
 		routes.NewUserRoutes,
+		routes.NewStockRoutes,
 		routes.NewRoutes,
 		server.NewServer,         // Returns *Server
 	)
