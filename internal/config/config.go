@@ -1,8 +1,11 @@
 package config
 
 import (
+	"log"
+	"reflect"
 	"strings"
 
+	// "github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
@@ -28,14 +31,33 @@ type Config struct {
 	
 }
 
-func LoadConfig() (*Config, error) {
-	// _ = godotenv.Load()
+func BindEnvs(v *viper.Viper, cfg interface{}) {
+	val := reflect.ValueOf(cfg)
+	typ := reflect.TypeOf(cfg)
 
-	// if err := godotenv.Load(); err != nil {
-	// 	fmt.Println("❌ godotenv error:", err)
-	// } else {
-	// 	fmt.Println("✅ .env loaded")
-	// }
+	// handle pointer
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+		val = val.Elem()
+	}
+
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+
+		tag := field.Tag.Get("mapstructure")
+		if tag == "" || tag == "-" {
+			continue
+		}
+
+		// mapstructure: "db_host" -> DB_HOST
+		envKey := strings.ToUpper(tag)
+
+		// Bind using mapstructure key
+		_ = v.BindEnv(tag, envKey)
+	}
+}
+
+func LoadConfig() (*Config, error) {
 	v := viper.New()
 
 	// -------------------------------
@@ -43,6 +65,7 @@ func LoadConfig() (*Config, error) {
 	// -------------------------------
 	v.SetConfigFile(".env")
 	v.SetConfigType("env")
+	v.AddConfigPath(".")
 
 	// -------------------------------
 	// Read from ENV (Docker / CI)
@@ -60,6 +83,10 @@ func LoadConfig() (*Config, error) {
 	// v.SetDefault("app_env", "local")
 	// v.SetDefault("server_port", 8080)
 	// v.SetDefault("db_port", 5432)
+	// v.SetDefault("db_user", "postgres")
+	// v.SetDefault("db_name", "finxplore")
+	// v.SetDefault("db_port", 5432)
+	BindEnvs(v, &Config{})
 
 	// -------------------------------
 	// Read .env if present

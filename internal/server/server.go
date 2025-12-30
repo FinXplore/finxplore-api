@@ -2,9 +2,11 @@ package server
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	"github.com/gin-contrib/cors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
@@ -52,6 +54,17 @@ func (s *Server) Run() error {
 	// 🔑 Routes are registered here
 	scheduler := cron.NewScheduler(s.cfg.DataWorkerURL, s.cfg.DataWorkerApiKey, s.logger)
     scheduler.Start()
+
+	//Cors settings
+	s.router.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{"*"},
+        AllowMethods:     []string{"GET", "POST", "PUT", "OPTIONS"},
+        AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: true,
+        MaxAge:           12 * time.Hour,
+    }))
+
 	s.routes.Register(s.router)
 
 	s.logger.Info("🚀 Server starting",
