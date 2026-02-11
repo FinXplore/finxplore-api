@@ -9,34 +9,36 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/Dhyey3187/finxplore-api/api/handler"
+	"github.com/Dhyey3187/finxplore-api/api/middleware"
 	"github.com/Dhyey3187/finxplore-api/internal/config"
 )
+
 type Server struct {
-	cfg    *config.Config
-	logger *zap.Logger // Add this
-	router *gin.Engine
-	db     *gorm.DB
-	redis  *redis.Client
+	cfg         *config.Config
+	logger      *zap.Logger // Add this
+	router      *gin.Engine
+	db          *gorm.DB
+	redis       *redis.Client
 	authHandler *handler.AuthHandler
 }
 
-func NewServer(cfg *config.Config,logger *zap.Logger, db *gorm.DB, rdb *redis.Client, authHandler *handler.AuthHandler) *Server {
+func NewServer(cfg *config.Config, logger *zap.Logger, db *gorm.DB, rdb *redis.Client, authHandler *handler.AuthHandler) *Server {
 
 	if cfg.AppEnv == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
 	router := gin.Default()
-	router.Use(gin.Recovery()) 
+	router.Use(gin.Recovery())
 	router.Use(gin.Logger())
-	// router.Use(middleware.CorsMiddleware()) // We will add this later
+	router.Use(middleware.CorsMiddleware())
 
 	s := &Server{
-		cfg:    cfg,
-		db:     db,
-		redis:  rdb,
-		router: router,
-		logger: logger,
+		cfg:         cfg,
+		db:          db,
+		redis:       rdb,
+		router:      router,
+		logger:      logger,
 		authHandler: authHandler,
 	}
 
