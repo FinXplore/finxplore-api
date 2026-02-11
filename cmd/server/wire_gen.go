@@ -9,10 +9,12 @@ package main
 import (
 	"github.com/Dhyey3187/finxplore-api/api/handler"
 	"github.com/Dhyey3187/finxplore-api/api/repository"
+	"github.com/Dhyey3187/finxplore-api/api/routes"
 	"github.com/Dhyey3187/finxplore-api/api/service"
 	"github.com/Dhyey3187/finxplore-api/internal/config"
 	"github.com/Dhyey3187/finxplore-api/internal/database"
 	"github.com/Dhyey3187/finxplore-api/internal/logger"
+	"github.com/Dhyey3187/finxplore-api/internal/middleware"
 	"github.com/Dhyey3187/finxplore-api/internal/server"
 )
 
@@ -37,8 +39,16 @@ func InitializeApp() (*server.Server, error) {
 		return nil, err
 	}
 	userRepository := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepository)
+	cacheRepository := repository.NewCacheRepository(client)
+	userService := service.NewUserService(userRepository, cacheRepository, configConfig)
 	authHandler := handler.NewAuthHandler(userService)
-	serverServer := server.NewServer(configConfig, zapLogger, db, client, authHandler)
+	userRoutes := routes.NewUserRoutes(authHandler)
+	stockRepository := repository.NewStockRepository(db)
+	marketService := service.NewMarketService(stockRepository)
+	marketHandler := handler.NewMarketHandler(marketService)
+	stockRoutes := routes.NewStockRoutes(marketHandler)
+	handlerFunc := middleware.AuthMiddleware(configConfig)
+	routesRoutes := routes.NewRoutes(userRoutes, stockRoutes, handlerFunc)
+	serverServer := server.NewServer(configConfig, zapLogger, db, client, routesRoutes)
 	return serverServer, nil
 }

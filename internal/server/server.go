@@ -8,21 +8,30 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
-	"github.com/Dhyey3187/finxplore-api/api/handler"
+	"github.com/Dhyey3187/finxplore-api/api/routes"
 	"github.com/Dhyey3187/finxplore-api/api/middleware"
 	"github.com/Dhyey3187/finxplore-api/internal/config"
+	"github.com/Dhyey3187/finxplore-api/internal/cron"
 )
 
 type Server struct {
 	cfg         *config.Config
-	logger      *zap.Logger // Add this
+	logger      *zap.Logger
 	router      *gin.Engine
 	db          *gorm.DB
 	redis       *redis.Client
+	routes *routes.Routes
 	authHandler *handler.AuthHandler
 }
 
-func NewServer(cfg *config.Config, logger *zap.Logger, db *gorm.DB, rdb *redis.Client, authHandler *handler.AuthHandler) *Server {
+func NewServer(
+	cfg *config.Config,
+	logger *zap.Logger,
+	db *gorm.DB,
+	rdb *redis.Client,
+	routes *routes.Routes,
+	authHandler *handler.AuthHandler
+) *Server {
 
 	if cfg.AppEnv == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -33,20 +42,22 @@ func NewServer(cfg *config.Config, logger *zap.Logger, db *gorm.DB, rdb *redis.C
 	router.Use(gin.Logger())
 	router.Use(middleware.CorsMiddleware())
 
-	s := &Server{
+	return &Server{
 		cfg:         cfg,
 		db:          db,
 		redis:       rdb,
 		router:      router,
 		logger:      logger,
-		authHandler: authHandler,
+		routes: routes,
+		authHandler: authHandler
 	}
-
-	return s
 }
 
 func (s *Server) Run() error {
-	s.RegisterRoutes()
+	// 🔑 Routes are registered here
+	scheduler := cron.NewScheduler(s.cfg.DataWorkerURL, s.cfg.DataWorkerApiKey, s.logger)
+    scheduler.Start()
+	s.routes.Register(s.router)
 
 	s.logger.Info("🚀 Server starting",
 		zap.Int("port", s.cfg.ServerPort),
