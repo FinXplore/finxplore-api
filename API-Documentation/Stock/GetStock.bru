@@ -1,0 +1,15 @@
+meta {
+  name: Get Stock Details
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/api/v1/stock/AAPL
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}

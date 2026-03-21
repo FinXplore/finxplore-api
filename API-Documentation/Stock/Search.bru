@@ -1,0 +1,19 @@
+meta {
+  name: Search Stocks
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/v1/stock/search?q=AAPL
+  body: none
+  auth: bearer
+}
+
+params:query {
+  q: AAPL
+}
+
+auth:bearer {
+  token: {{access_token}}
+}

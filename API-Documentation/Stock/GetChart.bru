@@ -1,0 +1,19 @@
+meta {
+  name: Get Stock Chart
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/api/v1/stock/AAPL/chart?period=1m
+  body: none
+  auth: bearer
+}
+
+params:query {
+  period: 1m
+}
+
+auth:bearer {
+  token: {{access_token}}
+}

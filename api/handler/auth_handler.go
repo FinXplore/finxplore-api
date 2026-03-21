@@ -26,16 +26,19 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	// 2. Call Service
-	user, err := h.service.RegisterUser(req.Email, req.Password, req.FirstName, req.LastName, req.DialingCode, req.MobileNumber, req.Currency)
+	accessToken, refreshToken, user, err := h.service.RegisterUser(req.Email, req.Password, req.FirstName, req.LastName, req.DialingCode, req.MobileNumber, req.Currency)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
 	}
 
 	// 3. Response (Resource Transformation)
-	response := dto.UserResponse{
+	response := dto.LoginResponse{
 		FullName: user.FirstName + " " + user.LastName,
 		Role:     user.Role,
+		UserCode:     user.UserCode,
+		AccessToken: accessToken,
+		RefreshToken: refreshToken,
 	}
 
 	c.JSON(http.StatusCreated, response)
@@ -51,7 +54,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	// 2. Call Service
-	accessToken, refreshToken, user, err := h.service.LoginUser(req.DialingCode, req.MobileNumber, req.Password)
+	accessToken, refreshToken, user, err := h.service.LoginUser(req.Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
@@ -76,7 +79,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := h.service.RefreshAccessToken(req.DialingCode, req.MobileNumber, req.RefreshToken)
+	accessToken, err := h.service.RefreshAccessToken(req.Email, req.RefreshToken)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
@@ -85,4 +88,75 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.RefreshResponse{
 		AccessToken: accessToken,
 	})
+}
+
+func (h *AuthHandler) Logout(c *gin.Context) {
+	userCode, _ := c.Get("user_code")
+	if err := h.service.LogoutUser(userCode.(string)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to logout"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "logged out successfully"})
+}
+
+func (h *AuthHandler) GetMe(c *gin.Context) {
+	userCode, _ := c.Get("user_code")
+	user, err := h.service.GetProfile(userCode.(string))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ProfileResponse{
+		UserCode:      user.UserCode,
+		Email:         user.Email,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		AvatarURL:     user.AvatarURL,
+		Currency:      user.Currency,
+		Role:          user.Role,
+		RiskTolerance: user.RiskTolerance,
+	})
+}
+
+func (h *AuthHandler) UpdateMe(c *gin.Context) {
+	userCode, _ := c.Get("user_code")
+	var req dto.UpdateProfileRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := h.service.UpdateProfile(userCode.(string), req.FirstName, req.LastName, req.AvatarURL, req.Currency)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ProfileResponse{
+		UserCode:      user.UserCode,
+		Email:         user.Email,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		AvatarURL:     user.AvatarURL,
+		Currency:      user.Currency,
+		Role:          user.Role,
+		RiskTolerance: user.RiskTolerance,
+	})
+}
+
+func (h *AuthHandler) ChangePassword(c *gin.Context) {
+	userCode, _ := c.Get("user_code")
+	var req dto.ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.ChangePassword(userCode.(string), req.CurrentPassword, req.NewPassword); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "password updated successfully"})
 }

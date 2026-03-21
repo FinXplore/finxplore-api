@@ -92,3 +92,73 @@ func (h *MarketHandler) Search(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *MarketHandler) GetIndices(c *gin.Context) {
+	data, err := h.marketService.GetIndices()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, data)
+}
+
+func (h *MarketHandler) GetGainers(c *gin.Context) {
+	exchange := c.DefaultQuery("exchange", "NSE")
+	data, err := h.marketService.GetMarketMovers(exchange, 10, "gainers")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, data)
+}
+
+func (h *MarketHandler) GetLosers(c *gin.Context) {
+	exchange := c.DefaultQuery("exchange", "NSE")
+	data, err := h.marketService.GetMarketMovers(exchange, 10, "losers")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, data)
+}
+
+func (h *MarketHandler) GetVolumeLeaders(c *gin.Context) {
+	exchange := c.DefaultQuery("exchange", "NSE")
+	data, err := h.marketService.GetMarketMovers(exchange, 10, "volume_leaders")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, data)
+}
+
+func (h *MarketHandler) GetQuote(c *gin.Context) {
+	ticker := c.Param("ticker")
+	data, err := h.marketService.GetStockQuote(ticker)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, data)
+}
+
+func (h *MarketHandler) GetNews(c *gin.Context) {
+	ticker := c.Param("ticker")
+	data, err := h.marketService.GetStockNews(ticker, 20)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, data)
+}
+
+func (h *MarketHandler) GetFinancials(c *gin.Context) {
+	ticker := c.Param("ticker")
+	stmtType := c.DefaultQuery("type", "income")
+	data, err := h.marketService.GetStockFinancials(ticker, stmtType)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, data)
+}

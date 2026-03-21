@@ -25,11 +25,23 @@ func (r *StockRoutes) Register(router *gin.RouterGroup) {
 }
 
 
+func (r *StockRoutes) RegisterMarketProtected(rg *gin.RouterGroup) {
+	rg.GET("/indices", r.marketHandler.GetIndices)
+	rg.GET("/gainers", r.marketHandler.GetGainers)
+	rg.GET("/losers", r.marketHandler.GetLosers)
+	rg.GET("/volume-leaders", r.marketHandler.GetVolumeLeaders)
+}
+
 func (r *StockRoutes) RegisterProtected(rg *gin.RouterGroup) {
+	// --- STOCK ROUTES ---
 	rg.GET("/search", r.marketHandler.Search)
 	// Final URL: GET /api/v1/stock/AAPL
 	rg.GET("/:ticker", r.marketHandler.GetStock)
 		
 	// Final URL: GET /api/v1/stock/AAPL/chart
 	rg.GET("/:ticker/chart", r.marketHandler.GetChart)
+
+	rg.GET("/:ticker/quote", r.marketHandler.GetQuote)
+	rg.GET("/:ticker/news", r.marketHandler.GetNews)
+	rg.GET("/:ticker/financials", r.marketHandler.GetFinancials)
 }

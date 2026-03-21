@@ -39,3 +39,41 @@ type StockSearchResponse struct {
 	Type     string `json:"type"`     // Equity, ETF
 	Exchange string `json:"exchange"`
 }
+
+type MarketIndexResponse struct {
+	Name        string          `json:"name"`
+	Value       decimal.Decimal `json:"value"`
+	Change      decimal.Decimal `json:"change"`
+	ChangePct   decimal.Decimal `json:"change_pct"`
+	LastUpdated time.Time       `json:"last_updated"`
+}
+
+type MarketMoverResponse struct {
+	Ticker      string          `json:"ticker"`
+	Name        string          `json:"name"`
+	Price       decimal.Decimal `json:"price"`
+	Change      decimal.Decimal `json:"change"`
+	ChangePct   decimal.Decimal `json:"change_pct"`
+	Volume      int64           `json:"volume"`
+}
+
+type StockQuoteResponse struct {
+	Ticker      string          `json:"ticker"`
+	Price       decimal.Decimal `json:"price"`
+	Change      decimal.Decimal `json:"change"`
+	ChangePct   decimal.Decimal `json:"change_pct"`
+	Volume      int64           `json:"volume"`
+	LastUpdated time.Time       `json:"last_updated"`
+}
+
+type StockNewsResponse struct {
+	Headline    string    `json:"headline"`
+	Source      string    `json:"source"`
+	URL         string    `json:"url"`
+	PublishedAt time.Time `json:"published_at"`
+}
+
+type FinancialStatementResponse struct {
+	PeriodEndDate string                 `json:"period_end_date"`
+	Metrics       map[string]interface{} `json:"metrics"`
+}

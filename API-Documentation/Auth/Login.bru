@@ -1,0 +1,24 @@
+meta {
+  name: Login User
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "dialing_code": "+1",
+    "mobile_number": "1234567890",
+    "password": "password123"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("access_token", res.body.access_token);
+  bru.setEnvVar("refresh_token", res.body.refresh_token);
+}

@@ -13,9 +13,9 @@ type User struct {
 	// -- Auth Data --
 	ID uint `gorm:"primaryKey"`
 	UserCode string `gorm:"uniqueIndex;not null;size:10"`
-	DialingCode string `gorm:"not null"`
-	MobileNumber string `gorm:"uniqueIndex;not null"`
-	Email        string
+	DialingCode  string
+	MobileNumber string
+	Email        string `gorm:"uniqueIndex;not null"`
 	Password string    `gorm:"not null"`
 	Role         string    `gorm:"default:'user'"` // 'user' or 'admin'
 	
